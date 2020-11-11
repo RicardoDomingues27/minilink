@@ -2,25 +2,29 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+var cors = require('cors')
+
+app.use(cors())
 
 const rotaProdutos = require('./routes/produtos');
 const rotaPedidos = require('./routes/pedidos');
+
 
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({extended: false})); //apenas dados simples
 app.use(bodyParser.json());
 
 app.use((req,res,next)=>{
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header(
-        'Access-Control-Allow-Headr',
+    req.header('Access-Control-Allow-Origin', '*');
+    req.header(
+        'Access-Control-Allow-Headers',
         'Origin, X-Requirested-With, Content-Type, Accept, Authorization'
     );
     if(req.method === 'OPTIONS'){
-        res.header(
+        req.header(
             'Access-Control-Allow-Methods',
             'PUT, POST, PATCH, DELETE, GET');
-        return res.status(200).send({});
+        return req.status(200).send({});
     }
     next();
 })
