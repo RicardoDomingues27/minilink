@@ -6,7 +6,7 @@ var cors = require('cors')
 
 app.use(cors())
 
-const rotaProdutos = require('./routes/produtos');
+const rotaLinks = require('./routes/links');
 const rotaPedidos = require('./routes/pedidos');
 
 
@@ -29,7 +29,7 @@ app.use((req,res,next)=>{
     next();
 })
 
-app.use('/produtos',rotaProdutos);
+app.use('/links',rotaLinks);
 app.use('/pedidos',rotaPedidos);
 
 // Tratamento de erro
