@@ -2,93 +2,101 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('../mysql').pool;
 
-router.get('/',(req,res, next)=>{
-    
 
-    mysql.getConnection((error, conn) =>{
-        conn.release();
-        if(error){return res.status(500).send({error: error})};
-
-        conn.query(
-            'SELECT * FROM links;',
-            (error, resultado, fields) => {
-                if(error ){return res.status(500).send({error: error})}
-                if(resultado.length == 0){return res.status(500).send({error: "Lista vazia"})}
-                return res.status(200).send({response: resultado})
-            }
-
-        )
-    });
-
-});
-//INSERE PRODUTO
+//INSERE link
 router.post('/',(req,res,next)=> {
 
-    const produto = {
+    const link = {
         nome: req.body.nome,
-        preco: req.body.preco
+        url: req.body.url,
+        minilink: req.body.minilink,
+        status: 1
     };
 
     mysql.getConnection((error,conn) => {
-        if(error){return res.status(500).send({error: error})};
+        if(error){return res.status(500).send({error: error})}
+
         conn.query(
-            "INSERT INTO links (nome,preco) VALUES(?,?)",
-            [req.body.nome ,  req.body.preco],
+            "INSERT INTO links (nome,url,minilink,status) VALUES(?,?,?,?)",
+            [link.nome, link.url, link.minilink, link.status],
             (error, resultado, field)=>{
                 conn.release();
                 if(error){return res.status(500).send({error: error})};
                 res.status(201).send({
-                    mensagem: 'Produto Inserido com sucesso',
-                    id_produto: resultado.insertId
+                    mensagem: 'Link inserido com sucesso',
+                    id_link: resultado.insertId
                 });
             }
         )
     });
-
-
 });
 
-router.get('/:id_link',(req,res, next)=>{
-    const id = req.params.id_produto
-    
+router.get('/',(req,res, next)=>{
+    const id = req.body.id_link;
+    const nome = req.body.nome;
     mysql.getConnection((error, conn) =>{
         conn.release();
         if(error){return res.status(500).send({error: error})};
-
+        sql = 'SELECT * FROM links;';
+      
+        if(id !== undefined){ // se tiver algum id, entao é uma busca especifica
+            sql = `SELECT * FROM links WHERE id_link = ${id}`;           
+        }
+        if(nome !== undefined){
+            sql = `SELECT * FROM links WHERE nome LIKE '%${nome}%'`;   
+        }    
         conn.query(
-            'SELECT * FROM links WHERE id_link = ?;',
-            [id],
+            sql,
             (error, resultado, fields) => {
                 if(error){return res.status(500).send({error: error})};
+                if(resultado.length == 0){return res.status(404).send({error: "O item não foi encontrado."})}
                 return res.status(200).send({response: resultado})
             }
-
-        )
+        )   
     });
 });
 
-router.delete('/:id_link',(req,res,next)=> {
-    const id = req.params.id_produto
+router.delete('/',(req,res,next)=> {
+    const id = req.body.id_link
 
     mysql.getConnection((error, conn) =>{
         conn.release();
-        if(error){return res.status(500).send({error: error})};
+        if(error){return res.status(500).send({error: error})}
 
         conn.query('DELETE FROM links WHERE id_link = ?',
             [id],
             (error, resultado, fields) =>{
-                if(error){return res.status(500).send({error: error})};
-                return res.status(200).send({response: resultado})
+                if(error){return res.status(500).send({error: error})}
+                return res.status(200).send({response: {
+                    "menssagem" : "Link apagado com sucesso.",
+                    "linhas_afetadas" : resultado.affectedRows
+                }})
             }
         )
-
     })
-
 });
 
 router.patch('/',(req,res,next)=> {
-    res.status(201).send({
-        mensagem: 'Usando PATCH dentro da rota de produtos'
+    const id  =  req.body.id_link;
+    const campo = req.body.campo;
+    const valor = req.body.valor;
+
+    mysql.getConnection((error,conn)=>{
+        conn.release();
+        if(error){return res.status(500).send({error: error})}
+        var sql = `UPDATE links SET ${campo} = '${valor}' WHERE id_link = ${id} `;
+
+        conn.query(sql,           
+            (error, resultado, fields) =>{
+                if(error){return res.status(500).send({error: error.sqlMessage})}
+                return res.status(200).send({response:{
+                    mensagem : "Update realizado com sucesso",
+                    id_link : id,
+                    campo : campo,
+                    valor : valor
+                }})
+            }
+        )
     });
 });
 module.exports = router;
