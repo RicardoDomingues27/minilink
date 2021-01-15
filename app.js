@@ -9,12 +9,9 @@ var cors = require('cors')
 app.use(cors())
 
 const rotaLinks = require('./routes/links');
-const rotaPedidos = require('./routes/pedidos');
-
-
 
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({extended: false})); //apenas dados simples
+app.use(bodyParser.urlencoded({extended: false})); 
 app.use(bodyParser.json());
 
 app.use((req,res,next)=>{
@@ -32,16 +29,9 @@ app.use((req,res,next)=>{
     next();
 })
 
-
 app.use('/links',rotaLinks);
-app.use('/pedidos',rotaPedidos);
 
-
-// Tratamento de erro
 app.use('/:minilink',( req, res, next) => {
-    //const erro = new Error('Não encontrado');
-    //erro.status = 404 ;
-    //next(erro);
     const minilink = req.params.minilink
     if(minilink !== 'links' && minilink !== 'pedidos'){
         mysql.getConnection((error,conn)=>{

@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const mysql = require('../mysql').pool;
 
-
-//INSERE link
 router.post('/',(req,res,next)=> {
 
     const link = {
@@ -39,7 +37,7 @@ router.get('/',(req,res, next)=>{
         if(error){return res.status(500).send({error: error})};
         sql = 'SELECT * FROM links;';
       
-        if(id !== undefined){ // se tiver algum id, entao é uma busca especifica
+        if(id !== undefined){ 
             sql = `SELECT * FROM links WHERE id_link = ${id}`;           
         }
         if(nome !== undefined){
@@ -68,7 +66,7 @@ router.delete('/',(req,res,next)=> {
             (error, resultado, fields) =>{
                 if(error){return res.status(500).send({error: error})}
                 return res.status(200).send({response: {
-                    "menssagem" : "Link apagado com sucesso.",
+                    "mensagem" : "Link apagado com sucesso.",
                     "linhas_afetadas" : resultado.affectedRows
                 }})
             }
